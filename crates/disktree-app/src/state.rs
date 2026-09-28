@@ -2501,6 +2501,18 @@ impl Disktree {
         true
     }
 
+    /// Open the row at `crumbs`: select it, then do what its own arrow does —
+    /// open it in place, or go in when it is already open.
+    ///
+    /// What a click on the row that is already selected means. The first click
+    /// only selects: the list is somewhere to read a directory, and a
+    /// directory that took the screen away under the pointer reading it would
+    /// say something the row's own arrow does not.
+    pub fn open_row(&mut self, crumbs: Vec<usize>, cx: &mut Context<'_, Self>) {
+        self.selected = Some(crumbs);
+        self.open_selected(cx);
+    }
+
     /// Open the selected row, or descend into it when it is already open.
     fn open_selected(&mut self, cx: &mut Context<'_, Self>) {
         let Some(selected) = self.selected.clone() else {

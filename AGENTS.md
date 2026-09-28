@@ -97,7 +97,10 @@ and `cargo build --release` directly; CI runs the gate on both systems.
    marks, the same figures from the same `Node` fields, the same filter
    verdict and the same age bucket. Anything one view shows and the other does
    not is a bug, not a feature. The list nests by opening a row
-   (`Disktree::expanded`); the mosaic nests by drawing depth.
+   (`Disktree::expanded`); the mosaic nests by drawing depth. A click is one
+   rule in both: it selects, and a click on what is already selected opens it —
+   the mosaic enters the directory, the list opens the row the way its own
+   arrow does.
 8. **Tile crumbs are absolute.** `treemap::layout` takes the drawn node's
    crumbs and every tile extends them, so a tile resolves from the scanned
    root at any depth. Relative crumbs look right at `~` and silently point
@@ -137,8 +140,8 @@ and `cargo build --release` directly; CI runs the gate on both systems.
   keys, including one that marks a directory, confirms the removal and checks
   the files are gone while unmarked neighbours are untouched, and ones that
   switch between the mosaic and the list, open and close its rows, step them
-  with the arrows, mark from one, filter it, and check the two settings
-  choices do not overlap.
+  with the arrows, click a row without leaving the directory it is in, mark
+  from one, filter it, and check the two settings choices do not overlap.
 * Rendering was verified by those tests and by running the app against a real
   home directory; it has not been eyeballed in every theme and font size. The
   list is virtualized, and a test asserts that a row far below the window is

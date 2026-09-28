@@ -153,10 +153,12 @@ disktree --help     # options: apparent size, follow links, skip hidden, …
   instead of squares. The directory on screen heads the list, then its
   children, nested as deep as you open them — click a chevron, or press
   `→`, to open a row and `←` to close it. `→` on an already-open row goes
-  into it, and `[` / `]` close everything or open one more level. Each row
-  carries its name, files, folders, a share bar and percentage, its size and
-  its last write. Marking, the selection, the filter, the age colours and
-  the review screen are the same in both views.
+  into it, and `[` / `]` close everything or open one more level. A click
+  selects a row, and a click on the selected row opens it the way `→` does;
+  `enter` goes in — so a pointer never changes directory under itself. Each
+  row carries its name, files, folders, a share bar and percentage, its size
+  and its last write. Marking, the selection, the filter, the age colours
+  and the review screen are the same in both views.
 - **Panel:** the selection (its size set large, share of the scan, files,
   last write, and for a checkout what git says — changes, stashes, unpushed
   commits); *Worth a look*, the largest things that could plausibly go;

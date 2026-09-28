@@ -617,6 +617,74 @@ fn the_list_arrows_step_rows_open_and_close(cx: &mut TestAppContext) {
     press(cx, "left");
     assert!(read(&view, cx, |app| app.crumbs.is_empty()));
 }
+/// A click selects a row; a click on the row that is already selected opens it,
+/// which is what its own arrow does.
+///
+/// It used to go into the directory at once, which took the whole screen away
+/// from a pointer that was only reading the list and gave a click a meaning the
+/// row's arrow did not have. Enter is still the way in from the keyboard; with
+/// a pointer it is a click on the row that is already open.
+#[gpui_kit::test]
+fn a_click_selects_a_row_and_a_second_click_opens_it(cx: &mut TestAppContext) {
+    use gpui_kit::Modifiers;
+
+    cx.update(gpui_omarchy::init);
+    let temp = fixture();
+    let (view, cx) = view_over(temp.path(), cx);
+    press(cx, "w");
+    draw(cx);
+
+    let junk = update(&view, cx, |app, _| child_crumbs(app, &[], "junk"));
+    let before = read(&view, cx, |app| (app.crumbs.clone(), rows(app).len()));
+    // A row's element id is its place in the flat list, so the row under test
+    // is found in the state rather than counted out by hand: what sits above
+    // junk depends on the fixture and on what the list is ranked by.
+    let at = read(&view, cx, |app| {
+        rows(app)
+            .iter()
+            .position(|row| row.crumbs == junk)
+            .expect("junk is a row")
+    });
+    let row: &'static str =
+        Box::leak(format!("list-row-{at}").into_boxed_str());
+
+    let bounds = cx.debug_bounds(row).expect("junk's row is drawn");
+    cx.simulate_click(bounds.center(), Modifiers::none());
+    draw(cx);
+
+    let clicked = read(&view, cx, |app| {
+        (app.crumbs.clone(), app.selected.clone(), rows(app).len())
+    });
+    assert_eq!(clicked.0, before.0, "the click left the directory alone");
+    assert_eq!(clicked.1, Some(junk.clone()), "and selected the row");
+    assert_eq!(clicked.2, before.1, "with nothing opened under it");
+    assert!(
+        !read(&view, cx, |app| app.is_expanded(&junk)),
+        "a first click opens nothing either"
+    );
+
+    // The second click is the row's arrow: it opens where it stands, so the
+    // directory on screen does not move.
+    let bounds = cx.debug_bounds(row).expect("junk's row is still drawn");
+    cx.simulate_click(bounds.center(), Modifiers::none());
+    draw(cx);
+    let opened = read(&view, cx, |app| {
+        (app.crumbs.clone(), app.is_expanded(&junk), rows(app).len())
+    });
+    assert_eq!(opened.0, before.0, "opened in place, not entered");
+    assert!(opened.1, "the second click opened the row");
+    assert!(opened.2 > before.1, "its children are rows now");
+
+    // And a click on the row that is already open is `→` on an open row: in.
+    let bounds = cx.debug_bounds(row).expect("junk's row is still drawn");
+    cx.simulate_click(bounds.center(), Modifiers::none());
+    draw(cx);
+    assert_eq!(
+        read(&view, cx, |app| app.crumbs.clone()),
+        junk,
+        "clicking the open row goes into it"
+    );
+}
 
 /// The depth keys do on the list what they do on the mosaic: one closes
 /// everything, the other opens one more level everywhere.
