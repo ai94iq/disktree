@@ -494,6 +494,7 @@ fn trail(app: &Disktree, theme: &Theme, cx: &Context<'_, Disktree>) -> Div {
         .justify_end()
         .gap(space::XXS)
         .min_w_0()
+        .debug_selector(|| "trail".into())
         .overflow_hidden();
     for (index, (label, step)) in steps.into_iter().enumerate() {
         if hidden.contains(&index) {
