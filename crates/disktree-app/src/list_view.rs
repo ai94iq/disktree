@@ -137,7 +137,9 @@ fn header(app: &Disktree, theme: &Theme) -> Div {
         // Matches the rows' reserved selection edge, so the first lane starts
         // at the same x in the heading and in every row.
         .border_l_2()
-        .text_size(text::CAPTION)
+        // A step under the rows it heads: the heading labels the column
+        // without competing with the figures below it.
+        .text_size(text::BODY)
         .text_color(theme.secondary)
         .child(div().flex_1().min_w_0().child("Name"))
         .child(lane(size::LIST_COUNT, "head-files", ranked))
@@ -188,9 +190,13 @@ fn list_row(
         // The one fixed height, and nothing else. The virtual list is told
         // LIST_ROW per row and lays them out by it, so this has to be the
         // whole of the row's height: `py` on top of it is border-box padding,
-        // which squeezes the content box to 8px of a 24px row and lets the
+        // which squeezes the content box to 12px of a 28px row and lets the
         // text spill out of it.
         .h(size::LIST_ROW)
+        // A row is read at a glance down a column, so it sets the step itself
+        // instead of inheriting the root's body text: the list's emphasis is
+        // type, where the mosaic's is area.
+        .text_size(text::TITLE)
         // The list hands each row a definite width and lays it out as a root,
         // which sizes to content unless asked. Without this the row stopped
         // short of the right edge while the header, a plain flex child, ran
@@ -222,7 +228,8 @@ fn list_row(
             } else {
                 gpui_omarchy::IconName::File
             })
-            .size(icon::SM)
+            // Sits with the row's own step, not the caption one.
+            .size(icon::MD)
             .flex_shrink_0()
             .text_color(if current { accent } else { theme.secondary }),
         )
@@ -245,7 +252,17 @@ fn list_row(
                         .text_color(theme.secondary)
                         .child(human_bytes(row.bytes)),
                 )
-                .child(div().min_w_0().child(row.name.clone())),
+                .child(
+                    // One line by construction: the slot is a fixed height
+                    // and the virtual list lays rows out by it, so a wrapped
+                    // name would spill into the row below.
+                    div()
+                        .min_w_0()
+                        .whitespace_nowrap()
+                        .overflow_hidden()
+                        .text_ellipsis()
+                        .child(row.name.clone()),
+                ),
         )
         .child(count(row.files))
         .child(count(row.dirs))
@@ -353,13 +370,14 @@ fn chevron(
                 } else {
                     gpui_omarchy::IconName::ChevronRight
                 })
-                .size(icon::SM),
+                .size(icon::MD),
             )
             .on_click(cx.listener(move |this, _, _, cx| {
                 this.toggle_expand(&crumbs, cx);
             }))
     } else {
-        button.child(div().size(icon::SM))
+        // The same box as the chevron, so the names still line up.
+        button.child(div().size(icon::MD))
     }
 }
 
