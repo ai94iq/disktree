@@ -305,10 +305,19 @@ fn list_row(
     line.id(ElementId::Name(format!("list-row-{index}").into()))
         .debug_selector(move || format!("list-row-{index}"))
         .on_click(cx.listener(move |this, _, _, cx| {
-            // A click on a directory goes in, the way Enter does; a click on a
-            // file only selects it, since there is nothing inside.
-            if openable {
-                this.go_to(crumbs.clone(), cx);
+            // The mosaic's click model, in a row: the first click selects, and
+            // a click on the row that is already selected opens it — which in
+            // a list is what its own arrow does: it opens in place, or goes in
+            // when it is already open. A click that went into the directory at
+            // once took the whole screen away from a pointer that was only
+            // reading the list, and did something `→` does not.
+            //
+            // Whether the row is already selected is asked here rather than
+            // read off the row: the answer a click acts on is this one, not
+            // the one the frame being painted was built with.
+            let chosen = this.selected.as_deref() == Some(crumbs.as_slice());
+            if openable && chosen {
+                this.open_row(crumbs.clone(), cx);
             } else {
                 this.select(Some(crumbs.clone()), cx);
             }
