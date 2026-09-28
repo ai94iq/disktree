@@ -1638,16 +1638,23 @@ fn after_descending_every_tile_is_inside_the_directory_drawn(
     assert_eq!(hatched, 1, "exactly the marked tile is hatched");
 }
 
-/// Drive the scan the view started until its tree lands.
+/// Drive the scan the view started until it finishes and its tree is up.
+///
+/// The scan is what is waited on, not the tree. A widen keeps the tree it
+/// already has on screen while the wider root is read, so `tree().is_some()`
+/// is true from the first frame, and waiting on that returned before the new
+/// tree had landed — leaving the assertions after it racing the walk. The
+/// handle is gone only once `poll_scan_once` has applied the result, so this
+/// waits for the state the callers actually want.
 fn finish_scan(view: &Entity<Disktree>, cx: &mut Window) {
     let epoch = read(view, cx, |app| app.scan_epoch);
     for _ in 0..600 {
         std::thread::sleep(std::time::Duration::from_millis(5));
-        let ready = update(view, cx, |app, cx| {
+        let landed = update(view, cx, |app, cx| {
             app.poll_scan_once(epoch, cx);
-            app.tree().is_some()
+            app.scan.is_none() && app.tree().is_some()
         });
-        if ready {
+        if landed {
             return;
         }
     }
@@ -1742,8 +1749,10 @@ fn widening_reuses_the_tree_it_has_and_reads_only_the_rest(
     std::fs::write(inner.join("late.bin"), vec![0_u8; 4096]).expect("write");
 
     press(cx, "g");
-    // The old tree stays on screen while the wider one is read.
-    assert!(read(&view, cx, |app| app.tree().is_some()));
+    // The old tree stays on screen while the wider one is read, and the scan
+    // is still in flight: waiting for a tree to exist would already be over
+    // here, which is what made the assertions below race the walk.
+    assert!(read(&view, cx, |app| app.tree().is_some() && app.scan.is_some()));
     finish_scan(&view, cx);
     assert_eq!(read(&view, cx, |app| app.root_path.clone()), temp.path());
     assert!(
