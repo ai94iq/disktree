@@ -1824,11 +1824,25 @@ fn a_crumb_lists_its_siblings_and_jumps_sideways(cx: &mut TestAppContext) {
     let chevron = cx
         .debug_bounds(Box::leak(format!("crumb-{last}-menu").into_boxed_str()))
         .expect("the current crumb has a menu");
+    let trail = cx.debug_bounds("trail");
+    // The trail clips to its own box when the bar is tight, and a crumb outside
+    // that box is drawn but not clickable: wider metrics put the ▾ past the
+    // edge, and the menu then never opened at all.
+    assert!(
+        trail.is_some_and(|trail| {
+            let x = chevron.center().x;
+            trail.origin.x <= x && x < trail.origin.x + trail.size.width
+        }),
+        "the current crumb's menu button is inside the trail; \
+         chevron={chevron:?} trail={trail:?}"
+    );
     cx.simulate_click(chevron.center(), Modifiers::none());
     draw(cx);
+    let opened = read(&view, cx, |app| app.crumb_menu.is_some());
     assert!(
         cx.debug_bounds("sibling-menu").is_some(),
-        "the menu is drawn"
+        "the menu is drawn; crumb_menu={opened} chevron={chevron:?} \
+         trail={trail:?}"
     );
     let (names, highlighted) = read(&view, cx, |app| {
         let menu = app.crumb_menu.clone().expect("open");

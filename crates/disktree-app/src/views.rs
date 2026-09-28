@@ -485,12 +485,21 @@ fn trail(app: &Disktree, theme: &Theme, cx: &Context<'_, Disktree>) -> Div {
     } else {
         0..0
     };
+    // The bar gives the trail only what the settings leave over, so
+    // when the row is tight the trail is what shrinks (`min_w_0`,
+    // and every settings group refuses to). Anchored right, it then
+    // drops its oldest steps instead of its last one — the crumb you
+    // are on, and the sibling menu behind its ▾, have to stay inside
+    // the clip box to be clickable at all. With room to spare the box
+    // is the content's own width, so this changes nothing.
     let mut row = div()
         .flex()
         .flex_row()
         .items_center()
         .gap(space::XXS)
         .min_w_0()
+        .justify_end()
+        .debug_selector(|| "trail".into())
         .overflow_hidden();
     for (index, (label, step)) in steps.into_iter().enumerate() {
         if hidden.contains(&index) {
