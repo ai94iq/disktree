@@ -96,13 +96,15 @@ pub mod size {
     /// it.
     pub const LIST_PERCENT: Rems = Rems(3.5);
     pub const LIST_SIZE: Rems = Rems(5.0);
-    pub const LIST_AGE: Rems = Rems(6.0);
+    /// Wide enough for the longest age, "18 months ago", to stay on the one
+    /// line a row has at the row's own type step.
+    pub const LIST_AGE: Rems = Rems(7.0);
     /// One level of the list's indentation, so a child sits visibly under its
     /// parent rather than merely deeper in the file.
     pub const LIST_INDENT: Rems = Rems(0.875);
     /// A list row's height. Fixed, and the same for every row, because the
     /// virtual list is told how tall each one is and has to be right.
-    pub const LIST_ROW: Rems = Rems(1.5);
+    pub const LIST_ROW: Rems = Rems(1.75);
     /// The review screen's summary column.
     pub const REVIEW_SUMMARY: Rems = Rems(22.5);
     /// The review list's share-bar lane.
