@@ -2236,7 +2236,12 @@ fn review_button(
 fn key_bar(app: &Disktree, theme: &Theme, cx: &App) -> Div {
     // Most useful first, so a narrow window clips the least useful. `w` sits
     // beside `t` because they are the two halves of one question — what shape,
-    // measured how — and `v` keeps its place at the trailing edge.
+    // measured how — and names the view it switches to.
+    let other = if app.view_mode == ViewMode::List {
+        "treemap"
+    } else {
+        "list"
+    };
     let hints: [(&str, &str); 12] = [
         ("space", "mark"),
         ("enter", "open"),
@@ -2246,10 +2251,10 @@ fn key_bar(app: &Disktree, theme: &Theme, cx: &App) -> Div {
         ("/", "filter"),
         ("[ ]", "depth"),
         ("t", "mode"),
-        ("w", "list"),
+        ("w", other),
         ("0", "reset"),
-        ("r", "rescan"),
         ("v", "volumes"),
+        ("r", "rescan"),
     ];
     let mut lane = div()
         .flex()
