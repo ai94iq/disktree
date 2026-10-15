@@ -825,48 +825,6 @@ fn view_settings(
         // the checkboxes' height and centre line.
         .p(space::XXS)
     };
-    // Wrapped so its bounds can be measured: the two choices are neighbours,
-    // and a group too narrow for its labels runs into the next one.
-    let mode = div()
-        .id("ranking-choice")
-        .debug_selector(|| "ranking-choice".into())
-        .flex_shrink_0()
-        .child(mode);
-
-    // Which shape the tree is drawn in, beside what it measures. First,
-    // because it is the choice that decides how everything below reads.
-    let view = {
-        let entity = entity.clone();
-        let focus = focus.clone();
-        button_group(
-            "view",
-            vec![
-                ChoiceItem::new("treemap", "Treemap"),
-                ChoiceItem::new("list", "List"),
-            ],
-            Some(usize::from(app.view_mode == ViewMode::List)),
-            move |index, window, cx| {
-                let mode = if index == 1 {
-                    ViewMode::List
-                } else {
-                    ViewMode::Mosaic
-                };
-                let _ = entity.update(cx, |this, cx| {
-                    this.set_view_mode(mode, cx);
-                });
-                window.focus(&focus, cx);
-            },
-            window,
-            cx,
-        )
-        .w(size::VIEW_CHOICE)
-        .p(space::XXS)
-    };
-    let view = div()
-        .id("view-choice")
-        .debug_selector(|| "view-choice".into())
-        .flex_shrink_0()
-        .child(view);
 
     let check = |on: bool| {
         if on {
@@ -1044,7 +1002,6 @@ fn view_settings(
         .gap(space::SM)
         .flex_shrink_0()
         .child(history)
-        .child(view)
         .child(mode)
         .child(hidden)
         .child(apparent)

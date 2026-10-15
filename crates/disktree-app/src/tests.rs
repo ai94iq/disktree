@@ -1047,28 +1047,6 @@ fn the_depth_control_drives_both_views(cx: &mut TestAppContext) {
     assert_eq!(read(&view, cx, rows).len(), listed.len());
 }
 
-/// The Treemap | List group and the Size | Files | Age group sit beside each
-/// other, not on top of each other: the first was once too narrow for its
-/// labels and ran into the second.
-#[gpui_kit::test]
-fn the_settings_row_does_not_overlap(cx: &mut TestAppContext) {
-    cx.update(gpui_omarchy::init);
-    let temp = fixture();
-    let (_view, cx) = view_over(temp.path(), cx);
-    draw(cx);
-
-    let choice = cx
-        .debug_bounds("view-choice")
-        .expect("the Treemap | List choice");
-    let ranking = cx
-        .debug_bounds("ranking-choice")
-        .expect("the Size | Files | Age choice");
-    assert!(
-        ranking.left() >= choice.right(),
-        "the two choices overlap: {choice:?} then {ranking:?}"
-    );
-}
-
 /// Marking works from the list, since it is the same selection and the same
 /// marks: a row marked here is the same mark the review screen removes.
 #[gpui_kit::test]

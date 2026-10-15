@@ -88,9 +88,6 @@ pub mod size {
     pub const SCANNING_METER: Rems = Rems(26.25);
     /// The Size | Files | Age choice in the settings row.
     pub const RANKING_CHOICE: Rems = Rems(11.0);
-    /// The Treemap | List choice in the settings row. Wide enough for the
-    /// longer of its two labels, or the group overflows onto the next one.
-    pub const VIEW_CHOICE: Rems = Rems(8.0);
     /// The list view's figure lanes. Fixed, so the numbers line up down the
     /// list and can be compared by eye, like the review list's.
     pub const LIST_COUNT: Rems = Rems(4.5);

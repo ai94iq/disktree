@@ -152,7 +152,7 @@ and `cargo build --release` directly; CI runs the gate on both systems.
   the files are gone while unmarked neighbours are untouched, and ones that
   switch between the mosaic and the list, open and close its rows, step them
   with the arrows, click a row without leaving the directory it is in, mark
-  from one, filter it, and check the two settings choices do not overlap.
+  from one, and filter it.
 * Rendering was verified by those tests and by running the app against a real
   home directory; it has not been eyeballed in every theme and font size. The
   list is virtualized, and a test asserts that a row far below the window is
