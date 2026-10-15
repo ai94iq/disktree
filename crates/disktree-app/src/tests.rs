@@ -1135,6 +1135,66 @@ fn space_marks_the_row_the_list_has_selected(cx: &mut TestAppContext) {
         .contains(&temp.path().join("junk"))));
 }
 
+/// The mosaic's pointer marks work on a row too: ctrl-click (cmd-click on
+/// macOS) and a middle click mark it, and neither selects nor opens it.
+#[gpui_kit::test]
+fn ctrl_click_and_middle_click_mark_a_list_row(cx: &mut TestAppContext) {
+    cx.update(gpui_omarchy::init);
+    let temp = fixture();
+    let (view, cx) = view_over(temp.path(), cx);
+    press(cx, "w");
+    draw(cx);
+
+    let junk = update(&view, cx, |app, _| child_crumbs(app, &[], "junk"));
+    let path = temp.path().join("junk");
+    let at = read(&view, cx, |app| {
+        rows(app)
+            .iter()
+            .position(|row| row.crumbs == junk)
+            .expect("junk is a row")
+    });
+    let row: &'static str =
+        Box::leak(format!("list-row-{at}").into_boxed_str());
+    let before =
+        read(&view, cx, |app| (app.crumbs.clone(), app.selected.clone()));
+
+    let ctrl = gpui_kit::Modifiers {
+        control: true,
+        ..gpui_kit::Modifiers::none()
+    };
+    let center = cx.debug_bounds(row).expect("junk's row is drawn").center();
+    cx.simulate_click(center, ctrl);
+    draw(cx);
+    let after = read(&view, cx, |app| {
+        (
+            app.marks.contains(&path),
+            app.crumbs.clone(),
+            app.selected.clone(),
+            app.is_expanded(&junk),
+        )
+    });
+    assert!(after.0, "ctrl-click marked the row");
+    assert_eq!((after.1, after.2), before, "and moved nothing");
+    assert!(!after.3, "nor opened it");
+
+    let center = cx.debug_bounds(row).expect("junk's row is drawn").center();
+    cx.simulate_mouse_down(
+        center,
+        gpui_kit::MouseButton::Middle,
+        gpui_kit::Modifiers::none(),
+    );
+    cx.simulate_mouse_up(
+        center,
+        gpui_kit::MouseButton::Middle,
+        gpui_kit::Modifiers::none(),
+    );
+    draw(cx);
+    assert!(
+        !read(&view, cx, |app| app.marks.contains(&path)),
+        "a middle click toggled the mark off again"
+    );
+}
+
 #[gpui_kit::test]
 fn the_help_overlay_opens_and_closes(cx: &mut TestAppContext) {
     cx.update(gpui_omarchy::init);

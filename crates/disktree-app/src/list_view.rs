@@ -16,8 +16,8 @@ use std::rc::Rc;
 
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::{
-    Context, Div, ElementId, FontWeight, InteractiveElement as _, IntoElement,
-    MouseButton, ParentElement as _, Rems, Stateful,
+    ClickEvent, Context, Div, ElementId, FontWeight, InteractiveElement as _,
+    IntoElement, MouseButton, ParentElement as _, Rems, Stateful,
     StatefulInteractiveElement as _, Styled, Window, div, px, size,
 };
 use gpui_omarchy::{ActiveTheme, Theme};
@@ -181,6 +181,7 @@ fn list_row(
     let crumbs = row.crumbs.clone();
     let chevron_crumbs = crumbs.clone();
     let reveal_crumbs = crumbs.clone();
+    let mark_crumbs = crumbs.clone();
     let openable = row.has_children;
 
     let line = div()
@@ -322,7 +323,14 @@ fn list_row(
     // `Fn` closure cannot hand its capture away.
     line.id(ElementId::Name(format!("list-row-{index}").into()))
         .debug_selector(move || format!("list-row-{index}"))
-        .on_click(cx.listener(move |this, _, _, cx| {
+        .on_click(cx.listener(move |this, event: &ClickEvent, _, cx| {
+            // ctrl-click (cmd-click on macOS) marks, as on a tile, and
+            // leaves the selection where it is.
+            let modifiers = event.modifiers();
+            if modifiers.control || modifiers.platform {
+                this.toggle_mark(&crumbs, cx);
+                return;
+            }
             // The mosaic's click model, in a row: the first click selects, and
             // a click on the row that is already selected opens it — which in
             // a list is what its own arrow does: it opens in place, or goes in
@@ -348,6 +356,13 @@ fn list_row(
             cx.listener(move |this, _, _, cx| {
                 this.select(Some(reveal_crumbs.clone()), cx);
                 this.reveal_target(cx);
+            }),
+        )
+        // A middle click marks, as on a tile.
+        .on_mouse_down(
+            MouseButton::Middle,
+            cx.listener(move |this, _, _, cx| {
+                this.toggle_mark(&mark_crumbs, cx);
             }),
         )
         .on_hover(cx.listener(move |this, hovered: &bool, _, cx| {
