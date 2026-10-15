@@ -17,8 +17,8 @@ use std::rc::Rc;
 use gpui_kit::prelude::FluentBuilder as _;
 use gpui_kit::{
     Context, Div, ElementId, FontWeight, InteractiveElement as _, IntoElement,
-    ParentElement as _, Rems, Stateful, StatefulInteractiveElement as _,
-    Styled, Window, div, px, size,
+    MouseButton, ParentElement as _, Rems, Stateful,
+    StatefulInteractiveElement as _, Styled, Window, div, px, size,
 };
 use gpui_omarchy::{ActiveTheme, Theme};
 
@@ -180,6 +180,7 @@ fn list_row(
     let current = row.is_current;
     let crumbs = row.crumbs.clone();
     let chevron_crumbs = crumbs.clone();
+    let reveal_crumbs = crumbs.clone();
     let openable = row.has_children;
 
     let line = div()
@@ -340,6 +341,15 @@ fn list_row(
             }
             this.pointer_active = false;
         }))
+        // What `o` does, as the mosaic's right-click does on a tile: select
+        // the row, then show it in the file manager. It never opens the row.
+        .on_mouse_down(
+            MouseButton::Right,
+            cx.listener(move |this, _, _, cx| {
+                this.select(Some(reveal_crumbs.clone()), cx);
+                this.reveal_target(cx);
+            }),
+        )
         .on_hover(cx.listener(move |this, hovered: &bool, _, cx| {
             this.hover_row(hovered.then_some(chevron_crumbs.as_slice()));
             cx.notify();

@@ -445,6 +445,61 @@ fn right_click_selects_the_tile_and_reveals_it(cx: &mut TestAppContext) {
     );
 }
 
+/// A right-click on a list row is the mosaic's right-click on a tile: it
+/// selects the row and reveals it, and opens nothing.
+#[gpui_kit::test]
+fn right_click_selects_a_list_row_and_reveals_it(cx: &mut TestAppContext) {
+    cx.update(gpui_omarchy::init);
+    let temp = fixture();
+    let (view, cx) = view_over(temp.path(), cx);
+    press(cx, "w");
+    draw(cx);
+
+    let junk = update(&view, cx, |app, _| child_crumbs(app, &[], "junk"));
+    let (at, path, before) = read(&view, cx, |app| {
+        let at = rows(app)
+            .iter()
+            .position(|row| row.crumbs == junk)
+            .expect("junk is a row");
+        (at, app.path_at(&junk).expect("a path"), app.crumbs.clone())
+    });
+    let row: &'static str =
+        Box::leak(format!("list-row-{at}").into_boxed_str());
+    let center = cx.debug_bounds(row).expect("junk's row is drawn").center();
+
+    // The test platform cannot open a file manager, so take the path away
+    // first: the reveal then reports it instead of reaching the platform.
+    std::fs::remove_dir_all(&path).expect("remove");
+
+    cx.simulate_mouse_down(
+        center,
+        gpui_kit::MouseButton::Right,
+        gpui_kit::Modifiers::none(),
+    );
+    cx.simulate_mouse_up(
+        center,
+        gpui_kit::MouseButton::Right,
+        gpui_kit::Modifiers::none(),
+    );
+    draw(cx);
+
+    let (selected, crumbs, open, notice) = read(&view, cx, |app| {
+        (
+            app.selected.clone(),
+            app.crumbs.clone(),
+            app.is_expanded(&junk),
+            app.notice.as_ref().map(|(text, _)| text.clone()),
+        )
+    });
+    assert_eq!(selected, Some(junk), "the row is selected");
+    assert_eq!(crumbs, before, "the directory on screen did not change");
+    assert!(!open, "a right-click opens nothing");
+    assert!(
+        notice.is_some_and(|text| text.contains("no longer on disk")),
+        "the reveal ran for it"
+    );
+}
+
 #[gpui_kit::test]
 fn typing_filters_live_and_enter_shows_only_the_matches(
     cx: &mut TestAppContext,
