@@ -23,7 +23,6 @@ use gpui_kit::{
 use gpui_omarchy::{ActiveTheme, Theme};
 
 use disktree_core::size::human_bytes;
-use disktree_core::tree::Metric;
 
 use crate::palette;
 use crate::state::{Disktree, Filtered, LIST_ROW_LIMIT, ListRow, now_seconds};
@@ -110,8 +109,8 @@ pub fn list(
     body.into_any_element()
 }
 
-/// The headings, in the lanes' order. The first column names the metric the
-/// rows are ranked by, so a list of file counts does not claim to be sizes.
+/// The headings, in the lanes' order. Each names what its lane shows,
+/// whatever the rows are ranked by; the size lane says which size it is.
 ///
 /// Every lane a row draws has a heading here, in the same order and the same
 /// width: the percentage beside the bar is one of them, and it keeps the lane
@@ -119,10 +118,10 @@ pub fn list(
 /// does not take no space — leaving one out shifts every heading after it off
 /// its column.
 fn header(app: &Disktree, theme: &Theme) -> Div {
-    let ranked = match app.options.metric {
-        Metric::Bytes if app.options.apparent_size => "Length",
-        Metric::Bytes => "On disk",
-        Metric::Files => "Files",
+    let measured = if app.options.apparent_size {
+        "Length"
+    } else {
+        "On disk"
     };
     div()
         .flex()
@@ -142,11 +141,11 @@ fn header(app: &Disktree, theme: &Theme) -> Div {
         .text_size(text::BODY)
         .text_color(theme.secondary)
         .child(div().flex_1().min_w_0().child("Name"))
-        .child(lane(size::LIST_COUNT, "head-files", ranked))
+        .child(lane(size::LIST_COUNT, "head-files", "Files"))
         .child(lane(size::LIST_COUNT, "head-dirs", "Folders"))
         .child(lane(size::LIST_SHARE, "head-share", "Share"))
         .child(lane(size::LIST_PERCENT, "head-percent", ""))
-        .child(lane(size::LIST_SIZE, "head-size", "Size"))
+        .child(lane(size::LIST_SIZE, "head-size", measured))
         .child(lane(size::LIST_AGE, "head-age", "Last write"))
 }
 
