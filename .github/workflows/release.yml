@@ -252,23 +252,7 @@ jobs:
 
       - name: Install Inno Setup
         shell: pwsh
-        # Pinned and checked rather than the runner's own: the two images
-        # carry different, older versions.
-        env:
-          INNO_URL: https://github.com/jrsoftware/issrc/releases/download/is-7_1_0/innosetup-7.1.0-x64.exe
-          INNO_SHA256: 0362a383ed217d4c4239b5933866dd96d3eb2102737da92f80f6057a4b40df2f
-        run: |
-          $setup = "$env:RUNNER_TEMP/innosetup.exe"
-          $dir = "$env:RUNNER_TEMP/inno"
-          Invoke-WebRequest $env:INNO_URL -OutFile $setup
-          $hash = (Get-FileHash $setup -Algorithm SHA256).Hash.ToLower()
-          if ($hash -ne $env:INNO_SHA256) {
-            throw "Inno Setup download has SHA256 $hash"
-          }
-          Start-Process $setup -Wait -ArgumentList `
-            '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/SP-',
-            '/CURRENTUSER', "/DIR=$dir"
-          "$dir" >> $env:GITHUB_PATH
+        run: packaging/windows/install-inno.ps1 -Dir "$env:RUNNER_TEMP\inno"
 
       - name: Installer
         id: installer

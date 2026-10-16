@@ -41,7 +41,9 @@ from `packaging/windows/disktree.iss` after `cargo build --release`:
 `ISCC.exe /DAppVersion=<version> /DArch=x86_64 packaging\windows\disktree.iss`
 writes `target\bundle\disktree-<version>-x86_64-windows-setup.exe`. Its
 `AppId` is how upgrades and the uninstaller find an existing install; never
-change it.
+change it (`check-setup.ps1` names it too). CI installs the pinned Inno Setup
+with `install-inno.ps1`, then compiles the setup on x64 and Arm64 and runs
+`check-setup.ps1`, which installs, upgrades and uninstalls it.
 
 `cargo xtask lint` is the gate. It must be green before anything is called
 done, and it must not fix anything: a red local run is the same signal CI gives.
